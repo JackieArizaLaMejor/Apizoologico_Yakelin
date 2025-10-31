@@ -1,28 +1,34 @@
-const parser = require("body-parser");
 const express = require('express');
-const app = express();
-const port = 3000;
-const animalRoutes = require("./routes/animal");
-const authRoutes = require("./routes/authentication");
+const parser = require("body-parser");
 const mongoose = require("mongoose");
 require('dotenv').config();
 
-app.use(parser.urlencoded({ extended: false })); //permite leer los datos que vienen en la petición
-app.use(parser.json()); // transforma los datos a formato JSON
+const app = express();
+const port = 3000;
 
-//Gestión de las rutas usando el middleware
-app.use("/api", animalRoutes);
-app.use("/api", authRoutes);
+// Rutas
+const animalRoutes = require("./routes/animal");
+const authRoutes = require("./routes/authentication");
+
+// 🟢 1️⃣ Middlewares: deben ir antes de las rutas
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-//Conexión a la base de datos
+// También puedes mantener body-parser (aunque Express ya lo incluye)
+app.use(parser.urlencoded({ extended: false }));
+app.use(parser.json());
+
+// 🟢 2️⃣ Registrar las rutas después
+app.use("/api", authRoutes);
+app.use("/api", animalRoutes);
+
+// 🟢 3️⃣ Conexión a MongoDB
 mongoose
-    .connect(process.env.MONGODB_URI)
-    .then(() => console.log("Conexión exitosa"))
-    .catch((error) => console.log(error));
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("✅ Conexión exitosa con MongoDB"))
+  .catch((error) => console.log("❌ Error en la conexión:", error));
 
-//Conexión al puerto
+// 🟢 4️⃣ Levantar servidor
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+  console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
 });
-
